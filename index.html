@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Cental </title>
+</head>
+<body onload="fetchResponse(); fetchUsers()">
+    <h1>Send Data to WebSocket Client</h1>
+    <form id="dataForm" action="/" method="post">
+        <div>
+            <label for="options">Choose a device:</label>
+            <select id="options" name="option"></select>
+        </div>
+        <br>
+        <input type="text" name="command" placeholder="Enter your name" required>    
+        <button type="submit">Send</button>
+    </form>
+    <div id="msg"></div>
+    <script>
+        async function fetchResponse() {
+            try {
+                const response = await fetch('http://localhost:5000/response');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.text();
+                if (data){
+                    const msg = document.getElementById("msg")
+                    msg.innerHTML = `${data}`
+                }
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        async function fetchUsers() {
+            try {
+                const response = await fetch('http://localhost:5000/users');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json()
+                if (Array.isArray(data)){
+                    for (let i = 0; i < data[0].length; i++) {
+                        const newOptionValue = data[0][i].id;
+                        const isOnline = data[1].some(comp => comp.id === newOptionValue);
+                        let newOptionText
+                        if(isOnline){
+                            newOptionText = `pc ${ i } (${data[0][i].username}) - online`;
+                        }else{
+                            newOptionText = `pc ${ i } (${data[0][i].username}) - offline`;                            
+                        }
+                        const optionsSelect = document.getElementById('options');
+                        const addButton = document.getElementById('addOption');
+                        const newOption = document.createElement('option');
+                        newOption.value = newOptionValue;
+                        newOption.textContent = newOptionText;
+                        optionsSelect.appendChild(newOption);
+                    }
+                }
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+    </script>
+
+</body>
+</html>
